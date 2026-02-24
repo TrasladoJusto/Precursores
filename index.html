@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Escuela del Servicio de Precursor</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="page-wrapper">
+        <header class="hero-section">
+            <div class="hero-bg"></div>
+            <div class="hero-overlay"></div>
+            <div class="hero-content">
+                <div class="hero-badge">Registro Oficial</div>
+                <h1 class="hero-title">ESCUELA DEL SERVICIO DE PRECURSOR</h1>
+                <p class="hero-subtitle">Querido precursor, por favor, llene este formulario de manera clara y precisa.</p>
+            </div>
+            <div class="hero-wave"></div>
+        </header>
+
+        <main class="main-content">
+            <div class="container">
+                <form id="precursorForm" class="precursor-form">
+                    <section class="form-section congregacion-section">
+                        <div class="section-icon">
+                            <!-- Icono de congregación (edificio) -->
+                            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                <path d="M12 2L3 6v2h18V6l-9-4z" fill="#6B2D5C" />
+                                <path d="M5 8v12h4v-6h6v6h4V8H5z" fill="#8B4A7C" />
+                            </svg>
+                        </div>
+                        <div class="section-content">
+                            <label for="congregacion" class="field-label">
+                                Elija su congregación: <span class="required">*</span>
+                            </label>
+                            <select id="congregacion" name="congregacion" required class="field-input select-input">
+                                <option value="">Elegir</option>
+                            </select>
+                        </div>
+                    </section>
+
+                    <section class="form-section personal-section">
+                        <div class="section-header">
+                            <div class="section-icon">
+                                <!-- Icono usuario -->
+                                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                    <circle cx="12" cy="8" r="3" fill="#6B2D5C" />
+                                    <path d="M4 20c0-4 4-6 8-6s8 2 8 6" fill="#8B4A7C" />
+                                </svg>
+                            </div>
+                            <h2 class="section-title">Datos Personales</h2>
+                        </div>
+                        
+                        <div class="fields-grid">
+                            <div class="field-group full-width">
+                                <label for="nombres" class="field-label">
+                                    Nombres completos: <span class="required">*</span>
+                                </label>
+                                <input type="text" id="nombres" name="nombres" required class="field-input" placeholder="Tu respuesta">
+                            </div>
+
+                            <div class="field-group">
+                                <label for="apellidoPaterno" class="field-label">
+                                    Apellido Paterno: <span class="required">*</span>
+                                </label>
+                                <input type="text" id="apellidoPaterno" name="apellidoPaterno" required class="field-input" placeholder="Tu respuesta">
+                            </div>
+
+                            <div class="field-group">
+                                <label for="apellidoMaterno" class="field-label">
+                                    Apellido Materno: <span class="required">*</span>
+                                </label>
+                                <input type="text" id="apellidoMaterno" name="apellidoMaterno" required class="field-input" placeholder="Tu respuesta">
+                            </div>
+
+                            <div class="field-group full-width">
+                                <label for="apellidoEsposo" class="field-label">
+                                    Apellidos del esposo(a) aunque no sea testigo:
+                                </label>
+                                <input type="text" id="apellidoEsposo" name="apellidoEsposo" class="field-input" placeholder="Tu respuesta">
+                            </div>
+
+                            <div class="field-group">
+                                <label for="email" class="field-label">
+                                    Correo electrónico: <span class="required">*</span>
+                                </label>
+                                <input type="email" id="email" name="email" required class="field-input" placeholder="Tu respuesta">
+                            </div>
+
+                            <div class="field-group">
+                                <label for="telefono" class="field-label">
+                                    Teléfono: <span class="required">*</span>
+                                </label>
+                                <input type="tel" id="telefono" name="telefono" required class="field-input" placeholder="Tu respuesta">
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="form-section confirmation-section">
+                        <div class="section-header">
+                            <div class="section-icon">
+                                <!-- Icono confirmación -->
+                                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                    <circle cx="12" cy="12" r="10" fill="#4CAF50" />
+                                    <path d="M9 12.5l1.8 1.8L15 11" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+                                </svg>
+                            </div>
+                            <h2 class="section-title">Confirmación de asistencia</h2>
+                        </div>
+
+                        <div class="fields-grid">
+                            <div class="field-group full-width">
+                                <label class="field-label">
+                                    ¿Asistirá a la Escuela de Precursores? <span class="required">*</span>
+                                </label>
+                                <div class="radio-group">
+                                    <label class="radio-option">
+                                        <input type="radio" name="asistira" value="si" required>
+                                        <span class="radio-label">Sí</span>
+                                    </label>
+                                    <label class="radio-option">
+                                        <input type="radio" name="asistira" value="no" required>
+                                        <span class="radio-label">No</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="field-group full-width">
+                                <label class="field-label">
+                                    ¿Desea solicitar alojamiento? <span class="required">*</span>
+                                </label>
+                                <div class="radio-group">
+                                    <label class="radio-option">
+                                        <input type="radio" name="alojamiento" value="si" required>
+                                        <span class="radio-label">Sí</span>
+                                    </label>
+                                    <label class="radio-option">
+                                        <input type="radio" name="alojamiento" value="no" required>
+                                        <span class="radio-label">No</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="field-group full-width" id="motivoNoAsistencia" style="display: none;">
+                                <label for="motivo" class="field-label">
+                                    En caso NO pueda asistir, por favor, explique el motivo:
+                                </label>
+                                <textarea id="motivo" name="motivo" class="field-input textarea-input" rows="4" placeholder="Tu respuesta"></textarea>
+                            </div>
+                        </div>
+                    </section>
+
+                    
+                    <div class="progress-indicator">
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="progressFill"></div>
+                        </div>
+                        <div class="progress-text">
+                            <span id="progressPercent">0%</span> completado
+                        </div>
+                    </div>
+
+                    
+                    <div class="form-actions">
+                        <button type="submit" class="submit-button">
+                            <span class="button-text">Enviar Registro</span>
+                            <svg class="button-icon" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                <path d="M4 10H16M16 10L12 6M16 10L12 14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <p class="form-footer">* Indica que la pregunta es obligatoria</p>
+                </form>
+
+                
+                <div id="successMessage" class="success-container hidden">
+                    <div class="success-animation">
+                        <div class="success-checkmark">
+                            <svg class="checkmark" viewBox="0 0 52 52">
+                                <circle class="checkmark-circle" cx="26" cy="26" r="25" fill="none"/>
+                                <path class="checkmark-check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <h2 class="success-title">¡Registro Enviado Exitosamente!</h2>
+                    <p class="success-message">Gracias por completar el formulario. Hemos recibido su información correctamente.</p>
+                    <button onclick="resetForm()" class="secondary-button">Enviar Otro Registro</button>
+                </div>
+            </div>
+        </main>
+
+        <footer class="site-footer">
+            <div class="footer-content">
+                <p>Escuela del Servicio de Precursor © 2026</p>
+            </div>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        // Aplicar contenido del sitio desde adminSettings si existe
+        (function(){
+            try {
+                const raw = localStorage.getItem('adminSettings');
+                if (!raw) return;
+                const adminSettings = JSON.parse(raw);
+                if (adminSettings.siteConfig) {
+                    const title = adminSettings.siteConfig.heroTitle || '';
+                    const subtitle = adminSettings.siteConfig.heroSubtitle || '';
+                    const titleEl = document.querySelector('.hero-title');
+                    const subEl = document.querySelector('.hero-subtitle');
+                    if (title && titleEl) titleEl.textContent = title;
+                    if (subtitle && subEl) subEl.textContent = subtitle;
+                    // aplicar apariencia si disponible
+                    if (adminSettings.siteConfig.primary) {
+                        document.documentElement.style.setProperty('--primary', adminSettings.siteConfig.primary);
+                    }
+                    const heroH = adminSettings.siteConfig.heroHeight;
+                    if (heroH) {
+                        const heroEl = document.querySelector('.hero-section');
+                        if (heroEl) heroEl.style.minHeight = heroH + 'vh';
+                    }
+                }
+            } catch (e) {
+                console.warn('No se pudo cargar configuración del sitio', e);
+            }
+        })();
+    </script>
+</body>
+</html>
