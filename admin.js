@@ -96,6 +96,18 @@ async function handleLogin(event) {
     // 2. Verificar contra localStorage (Local Override)
     if (!authenticated) {
         await ensureAdminsStructure();
+        
+        // MODO DE RECUPERACIÓN DE EMERGENCIA
+        // Si el usuario ingresa 'RECOVERY' como usuario y 'RESET2026' como contraseña, 
+        // se restauran las credenciales por defecto.
+        if (username === 'RECOVERY' && password === 'RESET2026') {
+            const hashedDefault = await hashString('Precursores.2026');
+            adminSettings.admins = [{ user: 'Michael9', pass: hashedDefault }];
+            saveAdminSettings();
+            showNotification('SISTEMA RESETEADO: Use Michael9 / Precursores.2026', 'success');
+            return;
+        }
+
         const localMatch = (adminSettings.admins || []).find(a => a.user === username && a.pass === hashedInput);
         if (localMatch) authenticated = true;
     }
@@ -1565,3 +1577,4 @@ style.textContent = `
     }
 `;
 document.head.appendChild(style);
+
