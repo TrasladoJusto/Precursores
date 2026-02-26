@@ -201,29 +201,6 @@
 
                 <div class="builder-container">
                     <div class="builder-section">
-                                <h3>Conexión con el Servidor (GitHub)</h3>
-                                <p style="margin-bottom: 1rem; color: var(--text-medium);">
-                                    Configure la conexión para que los cambios se reflejen en todos los dispositivos automáticamente.
-                                </p>
-                                <div style="display: grid; gap: 1rem; max-width: 560px;">
-                                    <input type="password" id="ghSyncToken" placeholder="GitHub Token" class="field-input">
-                                    <input type="text" id="ghSyncRepo" placeholder="usuario/repositorio" class="field-input">
-                                    <button class="save-button" onclick="saveManualSyncSettings()">Guardar Configuración de Conexión</button>
-                                </div>
-                            </div>
-
-                            <div class="builder-section">
-                                <h3>Contenido del Sitio</h3>
-                        <div style="display:grid; gap:0.75rem; max-width:720px;">
-                            <input id="siteHeroTitle" placeholder="Título principal (hero)" class="field-input">
-                            <input id="siteHeroSubtitle" placeholder="Subtítulo (hero)" class="field-input">
-                            <div style="display:flex; gap:0.5rem;">
-                                <button class="save-button" onclick="saveSiteContent()">Guardar Contenido</button>
-                                <button class="secondary-button" onclick="resetSiteContent()">Restaurar Predeterminado</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="builder-section">
                         <h3>Opciones de Congregación</h3>
                         <div id="congregacionOptions" class="options-list"></div>
                         <button onclick="addCongregacionOption()" class="add-button">+ Agregar Congregación</button>
@@ -261,17 +238,29 @@
                         </div>
 
                         <div class="builder-container">
-
-
                             <div class="builder-section">
-                                <h3>Sincronización Global (GitHub)</h3>
-                                <p style="color:var(--text-medium); margin-bottom: 0.5rem;">Configure la conexión automática con el servidor de GitHub.</p>
-                                <button class="secondary-button" onclick="openSyncConfig()">⚙️ Configurar Sincronización</button>
-                                <p style="font-size: 0.75rem; color: var(--text-light); margin-top: 0.5rem;">Acceso rápido: Ctrl + Shift + S</p>
+                                <h3>Conexión con el Servidor (GitHub)</h3>
+                                <p style="margin-bottom: 1rem; color: var(--text-medium);">
+                                    Configure la conexión para que los cambios se reflejen en todos los dispositivos automáticamente.
+                                </p>
+                                <div style="display: grid; gap: 1rem; max-width: 560px;">
+                                    <input type="password" id="ghSyncToken" placeholder="GitHub Token" class="field-input">
+                                    <input type="text" id="ghSyncRepo" placeholder="usuario/repositorio" class="field-input">
+                                    <button class="save-button" onclick="saveManualSyncSettings()">Guardar Configuración de Conexión</button>
+                                </div>
                             </div>
 
                             <div class="builder-section">
-                                <h3>Apariencia</h3>
+                                <h3>Contenido del Sitio</h3>
+                                <div style="display:grid; gap:0.75rem; max-width:720px;">
+                                    <input id="siteHeroTitle" placeholder="Título principal (hero)" class="field-input">
+                                    <input id="siteHeroSubtitle" placeholder="Subtítulo (hero)" class="field-input">
+                                    <div style="display:flex; gap:0.5rem;">
+                                        <button class="save-button" onclick="saveSiteContent()">Guardar Contenido</button>
+                                        <button class="secondary-button" onclick="resetSiteContent()">Restaurar Predeterminado</button>
+                                    </div>
+                                </div>
+                            </div>
                                 <div style="display:grid; gap:0.75rem; max-width:420px;">
                                     <label style="font-weight:600;">Color principal</label>
                                     <input id="sitePrimaryColor" type="color" value="#6B2D5C" class="field-input" style="padding:0.4rem; height:40px;">

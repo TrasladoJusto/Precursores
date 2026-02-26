@@ -620,8 +620,7 @@ function showView(viewName) {
         'submissions': 'submissionsView',
         'formBuilder': 'formBuilderView',
         'export': 'exportView',
-        'settings': 'settingsView',
-        'sync': 'syncView'
+        'settings': 'settingsView'
     };
     
     const viewId = views[viewName];
