@@ -201,7 +201,19 @@
 
                 <div class="builder-container">
                     <div class="builder-section">
-                        <h3>Contenido del Sitio</h3>
+                                <h3>Conexión con el Servidor (GitHub)</h3>
+                                <p style="margin-bottom: 1rem; color: var(--text-medium);">
+                                    Configure la conexión para que los cambios se reflejen en todos los dispositivos automáticamente.
+                                </p>
+                                <div style="display: grid; gap: 1rem; max-width: 560px;">
+                                    <input type="password" id="ghSyncToken" placeholder="GitHub Token" class="field-input">
+                                    <input type="text" id="ghSyncRepo" placeholder="usuario/repositorio" class="field-input">
+                                    <button class="save-button" onclick="saveManualSyncSettings()">Guardar Configuración de Conexión</button>
+                                </div>
+                            </div>
+
+                            <div class="builder-section">
+                                <h3>Contenido del Sitio</h3>
                         <div style="display:grid; gap:0.75rem; max-width:720px;">
                             <input id="siteHeroTitle" placeholder="Título principal (hero)" class="field-input">
                             <input id="siteHeroSubtitle" placeholder="Subtítulo (hero)" class="field-input">

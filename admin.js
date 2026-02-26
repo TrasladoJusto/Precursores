@@ -200,15 +200,20 @@ function loadSubmissions() {
  */
 function loadFormConfig() {
     try {
-        // 1. Cargar desde GLOBAL_DATA
+        // 1. Cargar local (Prioridad para cambios recientes)
+        const localConfig = localStorage.getItem('formConfig');
+        if (localConfig) {
+            formConfig = JSON.parse(localConfig);
+            return;
+        }
+        
+        // 2. Cargar desde GLOBAL_DATA (Si no hay cambios locales)
         if (window.GLOBAL_DATA && window.GLOBAL_DATA.formConfig) {
             formConfig = window.GLOBAL_DATA.formConfig;
             return;
         }
         
-        // 2. Cargar local
-        const config = localStorage.getItem('formConfig');
-        formConfig = config ? JSON.parse(config) : { congregaciones: [] };
+        formConfig = { congregaciones: [] };
     } catch (error) {
         console.error('Error al cargar configuración:', error);
         formConfig = { congregaciones: [] };
@@ -253,14 +258,14 @@ async function loadAdminSettings() {
  * Sincroniza automáticamente los datos con GitHub
  */
 async function syncWithGitHub() {
-    // Ofuscación para evitar que GitHub desactive el token automáticamente al detectarlo en texto plano
-    const p1 = 'github_pat_11A3HG5VA0XrMS4lzwly';
-    const p2 = 'Cv_ShLCIpFBfrj2dHjODzOOhWpt10YwI';
-    const p3 = 'M4a2Ec1sXJ2F3PSYIA5KIO5m74HHex';
-    const token = p1 + p2 + p3;
+    const token = localStorage.getItem('gh_sync_token');
+    const repo = localStorage.getItem('gh_sync_repo');
     
-    const repo = 'trasladojusto/Precursores';
-    
+    if (!token || !repo) {
+        console.warn('Conexión con GitHub no configurada.');
+        return;
+    }
+
     const data = {
         formConfig: formConfig,
         siteConfig: adminSettings.siteConfig || {},
@@ -276,17 +281,20 @@ async function syncWithGitHub() {
 window.GLOBAL_DATA = ${JSON.stringify(data, null, 4)};`;
 
     try {
-        // 1. Obtener el SHA del archivo actual
         const getUrl = `https://api.github.com/repos/${repo}/contents/form-data.js`;
         const response = await fetch(getUrl, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
         
-        if (!response.ok) throw new Error('No se pudo obtener el archivo de GitHub');
+        if (!response.ok) {
+            if (response.status === 401) {
+                showNotification('Error: Token de GitHub inválido. Configure de nuevo en Ajustes.', 'error');
+            }
+            throw new Error(`GitHub API Error: ${response.status}`);
+        }
         const fileData = await response.json();
         const sha = fileData.sha;
 
-        // 2. Actualizar el archivo con codificación UTF-8 robusta
         const utf8Content = unescape(encodeURIComponent(content));
         const base64Content = btoa(utf8Content);
 
@@ -297,22 +305,61 @@ window.GLOBAL_DATA = ${JSON.stringify(data, null, 4)};`;
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-                message: 'Update global data (Automatic Sync)',
+                message: 'Update global data (Protected Sync)',
                 content: base64Content,
                 sha: sha
             })
         });
 
         if (updateResponse.ok) {
-            showNotification('¡Sincronizado con GitHub automáticamente!', 'success');
-            logAction('Sincronización automática con GitHub exitosa');
+            showNotification('¡Cambios guardados globalmente!', 'success');
         } else {
-            throw new Error('Error al actualizar el archivo en GitHub');
+            throw new Error('Error al actualizar archivo en el servidor.');
         }
     } catch (error) {
-        console.error('Error en syncWithGitHub:', error);
-        showNotification('Error de sincronización con GitHub', 'error');
+        console.error('Sync Error:', error);
+        showNotification('Error al sincronizar con el servidor.', 'error');
     }
+}
+
+/**
+ * Guarda manualmente la configuración de sincronización en Ajustes
+ */
+function saveManualSyncSettings() {
+    const token = document.getElementById('ghSyncToken').value.trim();
+    const repo = document.getElementById('ghSyncRepo').value.trim();
+    
+    if (!token || !repo) {
+        showNotification('Token y Repositorio son obligatorios.', 'error');
+        return;
+    }
+
+    localStorage.setItem('gh_sync_token', token);
+    localStorage.setItem('gh_sync_repo', repo);
+    showNotification('Conexión configurada correctamente.', 'success');
+    syncWithGitHub(); // Probar conexión
+}
+
+/**
+ * Carga la configuración de sincronización en los campos de Ajustes
+ */
+function loadManualSyncSettings() {
+    const tokenEl = document.getElementById('ghSyncToken');
+    const repoEl = document.getElementById('ghSyncRepo');
+    if (tokenEl) tokenEl.value = localStorage.getItem('gh_sync_token') || '';
+    if (repoEl) repoEl.value = localStorage.getItem('gh_sync_repo') || '';
+}
+
+/**
+ * Muestra una vista específica
+ */
+function showView(viewName) {
+    // ... logic existing ...
+    if (viewName === 'settings') {
+        loadAdminSettings();
+        loadManualSyncSettings(); // Cargar campos de sync
+    }
+    // ...
 }
 
 async function saveSiteContent() {
@@ -596,8 +643,7 @@ function showView(viewName) {
             renderFormBuilder();
         } else if (viewName === 'settings') {
             loadAdminSettings();
-        } else if (viewName === 'sync') {
-            loadSyncSettings();
+            loadManualSyncSettings();
         }
         
         currentView = viewName;
@@ -605,30 +651,31 @@ function showView(viewName) {
 }
 
 /**
- * Carga los ajustes de sincronización
+ * Guarda manualmente la configuración de sincronización en Ajustes
  */
-function loadSyncSettings() {
-    const token = localStorage.getItem('ghToken') || '';
-    const repo = localStorage.getItem('ghRepo') || '';
+function saveManualSyncSettings() {
+    const token = document.getElementById('ghSyncToken').value.trim();
+    const repo = document.getElementById('ghSyncRepo').value.trim();
     
-    const tokenEl = document.getElementById('ghToken');
-    const repoEl = document.getElementById('ghRepo');
-    
-    if (tokenEl) tokenEl.value = token;
-    if (repoEl) repoEl.value = repo;
+    if (!token || !repo) {
+        showNotification('Token y Repositorio son obligatorios.', 'error');
+        return;
+    }
+
+    localStorage.setItem('gh_sync_token', token);
+    localStorage.setItem('gh_sync_repo', repo);
+    showNotification('Conexión configurada correctamente.', 'success');
+    syncWithGitHub();
 }
 
 /**
- * Guarda los ajustes de sincronización
+ * Carga la configuración de sincronización en los campos de Ajustes
  */
-function saveSyncSettings() {
-    const token = document.getElementById('ghToken').value.trim();
-    const repo = document.getElementById('ghRepo').value.trim();
-    
-    localStorage.setItem('ghToken', token);
-    localStorage.setItem('ghRepo', repo);
-    
-    showNotification('Ajustes de sincronización guardados', 'success');
+function loadManualSyncSettings() {
+    const tokenEl = document.getElementById('ghSyncToken');
+    const repoEl = document.getElementById('ghSyncRepo');
+    if (tokenEl) tokenEl.value = localStorage.getItem('gh_sync_token') || '';
+    if (repoEl) repoEl.value = localStorage.getItem('gh_sync_repo') || '';
 }
 
 /**
