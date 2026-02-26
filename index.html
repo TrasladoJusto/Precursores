@@ -201,34 +201,61 @@
         </footer>
     </div>
 
+    <script src="form-data.js"></script>
+    <script>
+        // Aplicar configuración global desde GLOBAL_DATA
+        (function() {
+            if (window.GLOBAL_DATA && window.GLOBAL_DATA.siteConfig) {
+                const cfg = window.GLOBAL_DATA.siteConfig;
+                
+                // Aplicar Títulos
+                if (cfg.heroTitle) {
+                    const title = document.querySelector('.hero-title');
+                    if (title) title.textContent = cfg.heroTitle;
+                }
+                if (cfg.heroSubtitle) {
+                    const subtitle = document.querySelector('.hero-subtitle');
+                    if (subtitle) subtitle.textContent = cfg.heroSubtitle;
+                }
+                
+                // Aplicar Colores
+                if (cfg.primaryColor) {
+                    document.documentElement.style.setProperty('--primary', cfg.primaryColor);
+                }
+                
+                // Aplicar Altura del Hero
+                if (cfg.heroHeight) {
+                    const hero = document.querySelector('.hero-section');
+                    if (hero) hero.style.minHeight = cfg.heroHeight + 'vh';
+                }
+            }
+        })();
+    </script>
     <script src="script.js"></script>
     <script>
-        // Aplicar contenido del sitio desde adminSettings si existe
+        // Aplicar contenido del sitio desde adminSettings si existe (LOCAL OVERRIDE)
         (function(){
             try {
                 const raw = localStorage.getItem('adminSettings');
                 if (!raw) return;
                 const adminSettings = JSON.parse(raw);
                 if (adminSettings.siteConfig) {
-                    const title = adminSettings.siteConfig.heroTitle || '';
-                    const subtitle = adminSettings.siteConfig.heroSubtitle || '';
-                    const titleEl = document.querySelector('.hero-title');
-                    const subEl = document.querySelector('.hero-subtitle');
-                    if (title && titleEl) titleEl.textContent = title;
-                    if (subtitle && subEl) subEl.textContent = subtitle;
-                    // aplicar apariencia si disponible
-                    if (adminSettings.siteConfig.primary) {
-                        document.documentElement.style.setProperty('--primary', adminSettings.siteConfig.primary);
+                    const cfg = adminSettings.siteConfig;
+                    if (cfg.heroTitle) {
+                        const title = document.querySelector('.hero-title');
+                        if (title) title.textContent = cfg.heroTitle;
                     }
-                    const heroH = adminSettings.siteConfig.heroHeight;
-                    if (heroH) {
-                        const heroEl = document.querySelector('.hero-section');
-                        if (heroEl) heroEl.style.minHeight = heroH + 'vh';
+                    if (cfg.heroSubtitle) {
+                        const subtitle = document.querySelector('.hero-subtitle');
+                        if (subtitle) subtitle.textContent = cfg.heroSubtitle;
+                    }
+                    if (cfg.primary) document.documentElement.style.setProperty('--primary', cfg.primary);
+                    if (cfg.heroHeight) {
+                        const hero = document.querySelector('.hero-section');
+                        if (hero) hero.style.minHeight = cfg.heroHeight + 'vh';
                     }
                 }
-            } catch (e) {
-                console.warn('No se pudo cargar configuración del sitio', e);
-            }
+            } catch (e) {}
         })();
     </script>
 </body>

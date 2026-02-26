@@ -92,6 +92,13 @@
                     <span>Configuración</span>
                 </button>
 
+                <button class="nav-item" onclick="showView('sync')" id="navSync">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                    </svg>
+                    <span>Sincronizar</span>
+                </button>
+
                 <button class="nav-item logout" onclick="logout()">
                     <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
                         <path d="M13 4L17 8M17 8L13 12M17 8H7M7 16H4C3.44772 16 3 15.5523 3 15V5C3 4.44772 3.44772 4 4 4H7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
@@ -240,7 +247,46 @@
                 </div>
             </div>
                 
-                    <!-- Settings View -->
+                    <!-- Sync View -->
+            <div id="syncView" class="admin-view hidden">
+                <div class="view-header">
+                    <h1>Sincronización Global</h1>
+                    <p>Gestiona la consistencia de datos entre dispositivos (GitHub Pages)</p>
+                </div>
+
+                <div class="builder-container">
+                    <div class="builder-section">
+                        <h3>1. Sincronización con GitHub (Automática)</h3>
+                        <p style="margin-bottom: 1rem; color: var(--text-medium);">
+                            Ingresa un Token de GitHub para guardar los cambios directamente en el repositorio. Esto hará que los cambios sean visibles en todos los dispositivos automáticamente.
+                        </p>
+                        <div style="display: grid; gap: 1rem; max-width: 500px;">
+                            <input type="password" id="ghToken" placeholder="GitHub Personal Access Token" class="field-input">
+                            <input type="text" id="ghRepo" placeholder="usuario/repositorio (ej: trasladojusto/Precursores)" class="field-input">
+                            <button class="save-button" onclick="saveSyncSettings()">Guardar Credenciales de Sync</button>
+                        </div>
+                    </div>
+
+                    <div class="builder-section">
+                        <h3>2. Exportar Configuración (Manual)</h3>
+                        <p style="margin-bottom: 1rem; color: var(--text-medium);">
+                            Si no usas el Token, genera el código y pégalo manualmente en el archivo <code>form-data.js</code> dentro de GitHub.
+                        </p>
+                        <button class="save-button" onclick="generateGlobalCode()">Generar Código form-data.js</button>
+                    </div>
+
+                    <div class="builder-section">
+                        <h3>3. Captura de Datos (WhatsApp)</h3>
+                        <p style="margin-bottom: 1rem; color: var(--text-medium);">
+                            Pega aquí el texto recibido por WhatsApp para agregarlo automáticamente a la lista de registros.
+                        </p>
+                        <textarea id="whatsappImport" rows="5" class="field-input" placeholder="Pega el mensaje de WhatsApp aquí..."></textarea>
+                        <button class="save-button" style="margin-top: 1rem;" onclick="importFromWhatsApp()">Procesar e Importar</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Settings View -->
                     <div id="settingsView" class="admin-view hidden">
                         <div class="view-header">
                             <h1>Configuración Avanzada</h1>
@@ -359,6 +405,7 @@
         </div>
     </div>
 
+    <script src="form-data.js"></script>
     <script src="admin.js"></script>
 </body>
 </html>

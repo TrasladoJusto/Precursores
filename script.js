@@ -20,7 +20,16 @@ document.addEventListener('DOMContentLoaded', function() {
  * Inicializa la configuración del formulario
  */
 function initializeFormConfig() {
-    // Cargar configuración guardada o usar la por defecto
+    // 1. Intentar cargar desde GLOBAL_DATA (form-data.js) - Prioridad Alta
+    if (window.GLOBAL_DATA) {
+        if (window.GLOBAL_DATA.formConfig) {
+            const config = window.GLOBAL_DATA.formConfig;
+            loadCongregaciones(config.congregaciones);
+            return; // Usar configuración global
+        }
+    }
+
+    // 2. Cargar configuración guardada en localStorage o usar la por defecto
     let config = loadFormConfig();
     if (!config || !config.congregaciones || config.congregaciones.length === 0) {
         config = DEFAULT_FORM_CONFIG;
@@ -290,17 +299,42 @@ function handleFormSubmit(event) {
         return;
     }
     
-    // Guardar registro
-    if (saveSubmission(formData)) {
-        // Mostrar mensaje de éxito
-        showSuccessMessage();
-        
-        // Resetear formulario
-        document.getElementById('precursorForm').reset();
-        updateProgress(document.querySelectorAll('[required]'));
-    } else {
-        showNotification('Ocurrió un error al guardar el registro. Intente nuevamente.', 'error');
-    }
+    // Guardar registro localmente como backup
+    saveSubmission(formData);
+    
+    // Abrir WhatsApp para enviar al administrador
+    sendSubmissionToAdmin(formData);
+    
+    // Mostrar mensaje de éxito
+    showSuccessMessage();
+    
+    // Resetear formulario
+    document.getElementById('precursorForm').reset();
+    updateProgress(document.querySelectorAll('[required]'));
+}
+
+/**
+ * Envía los datos del formulario al administrador vía WhatsApp
+ */
+function sendSubmissionToAdmin(data) {
+    // El número del administrador se puede configurar en GLOBAL_DATA o por defecto
+    const adminPhone = (window.GLOBAL_DATA && window.GLOBAL_DATA.adminPhone) || '51900000000'; // REEMPLAZAR CON NÚMERO REAL
+    
+    let message = `*NUEVO REGISTRO: ESCUELA DE PRECURSORES*\n\n`;
+    message += `• *Congregación:* ${data.congregacion}\n`;
+    message += `• *Nombres:* ${data.nombres}\n`;
+    message += `• *Apellido Paterno:* ${data.apellidoPaterno}\n`;
+    message += `• *Apellido Materno:* ${data.apellidoMaterno}\n`;
+    if (data.apellidoEsposo) message += `• *Esposo(a):* ${data.apellidoEsposo}\n`;
+    message += `• *Email:* ${data.email}\n`;
+    message += `• *Teléfono:* ${data.telefono}\n`;
+    message += `• *Asistirá:* ${data.asistira === 'si' ? 'SÍ ✅' : 'NO ❌'}\n`;
+    message += `• *Alojamiento:* ${data.alojamiento === 'si' ? 'SÍ 🏠' : 'NO'}\n`;
+    if (data.motivo) message += `• *Motivo:* ${data.motivo}\n`;
+    message += `\n*ID:* ${data.id}`;
+
+    const url = `https://wa.me/${adminPhone}?text=${encodeURIComponent(message)}`;
+    window.open(url, '_blank');
 }
 
 /**

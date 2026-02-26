@@ -4,13 +4,22 @@ let allSubmissions = [];
 let filteredSubmissions = [];
 let formConfig = {};
 let adminSettings = {
-    admins: [{ user: 'Michael9', pass: 'Precursores.2026' }],
+    admins: [{ user: 'Michael9', pass: '8093f67972f0995f32924375f492a8326a575218d601567302f8361099f66453' }],
     submissionsEnabled: true,
     actionLog: []
 };
 
 // Inicialización
 document.addEventListener('DOMContentLoaded', async function() {
+    // Cargar datos globales si existen
+    if (window.GLOBAL_DATA) {
+        if (window.GLOBAL_DATA.adminConfig) {
+            adminSettings.admins = window.GLOBAL_DATA.adminConfig.admins || adminSettings.admins;
+        }
+        if (window.GLOBAL_DATA.formConfig) {
+            formConfig = window.GLOBAL_DATA.formConfig;
+        }
+    }
     await checkAuthentication();
     setupEventListeners();
 });
@@ -74,10 +83,24 @@ async function handleLogin(event) {
 
     const username = document.getElementById('username').value;
     const password = document.getElementById('password').value;
-    await ensureAdminsStructure();
+    
+    // 1. Verificar contra GLOBAL_DATA (form-data.js) - Prioridad Alta
     const hashedInput = await hashString(password);
-    const match = (adminSettings.admins || []).find(a => a.user === username && a.pass === hashedInput);
-    if (match) {
+    let authenticated = false;
+    
+    if (window.GLOBAL_DATA && window.GLOBAL_DATA.adminConfig) {
+        const globalMatch = (window.GLOBAL_DATA.adminConfig.admins || []).find(a => a.user === username && a.pass === hashedInput);
+        if (globalMatch) authenticated = true;
+    }
+    
+    // 2. Verificar contra localStorage (Local Override)
+    if (!authenticated) {
+        await ensureAdminsStructure();
+        const localMatch = (adminSettings.admins || []).find(a => a.user === username && a.pass === hashedInput);
+        if (localMatch) authenticated = true;
+    }
+
+    if (authenticated) {
         sessionStorage.setItem('adminAuthenticated', 'true');
         sessionStorage.setItem('adminUser', username);
         setCurrentAdminUser(username);
@@ -109,6 +132,25 @@ async function loadData() {
     loadFormConfig();
     updateDashboard();
     await loadAdminSettings();
+    applyGlobalData();
+}
+
+/**
+ * Aplica los datos del archivo form-data.js si existen
+ */
+function applyGlobalData() {
+    if (window.GLOBAL_DATA) {
+        // Mezclar registros globales con locales
+        if (window.GLOBAL_DATA.submissions && window.GLOBAL_DATA.submissions.length > 0) {
+            const localIds = new Set(allSubmissions.map(s => s.id));
+            const globalSubmissions = window.GLOBAL_DATA.submissions.filter(s => !localIds.has(s.id));
+            if (globalSubmissions.length > 0) {
+                allSubmissions = [...allSubmissions, ...globalSubmissions];
+                filteredSubmissions = [...allSubmissions];
+                updateDashboard();
+            }
+        }
+    }
 }
 
 /**
@@ -116,8 +158,23 @@ async function loadData() {
  */
 function loadSubmissions() {
     try {
-        const data = localStorage.getItem('precursorSubmissions');
-        allSubmissions = data ? JSON.parse(data) : [];
+        const localData = localStorage.getItem('precursorSubmissions');
+        let localSubmissions = localData ? JSON.parse(localData) : [];
+        
+        // Cargar globales
+        let globalSubmissions = (window.GLOBAL_DATA && window.GLOBAL_DATA.submissions) || [];
+        
+        // Mezclar evitando duplicados por ID
+        const all = [...globalSubmissions];
+        const globalIds = new Set(globalSubmissions.map(s => s.id));
+        
+        localSubmissions.forEach(s => {
+            if (!globalIds.has(s.id)) {
+                all.push(s);
+            }
+        });
+        
+        allSubmissions = all;
         filteredSubmissions = [...allSubmissions];
         
         updateSubmissionCount();
@@ -133,6 +190,13 @@ function loadSubmissions() {
  */
 function loadFormConfig() {
     try {
+        // 1. Cargar desde GLOBAL_DATA
+        if (window.GLOBAL_DATA && window.GLOBAL_DATA.formConfig) {
+            formConfig = window.GLOBAL_DATA.formConfig;
+            return;
+        }
+        
+        // 2. Cargar local
         const config = localStorage.getItem('formConfig');
         formConfig = config ? JSON.parse(config) : { congregaciones: [] };
     } catch (error) {
@@ -431,7 +495,8 @@ function showView(viewName) {
         'submissions': 'submissionsView',
         'formBuilder': 'formBuilderView',
         'export': 'exportView',
-        'settings': 'settingsView'
+        'settings': 'settingsView',
+        'sync': 'syncView'
     };
     
     const viewId = views[viewName];
@@ -452,12 +517,167 @@ function showView(viewName) {
         } else if (viewName === 'formBuilder') {
             renderFormBuilder();
         } else if (viewName === 'settings') {
-            // nothing else needed, settings view reads adminSettings on load
             loadAdminSettings();
+        } else if (viewName === 'sync') {
+            loadSyncSettings();
         }
         
         currentView = viewName;
     }
+}
+
+/**
+ * Carga los ajustes de sincronización
+ */
+function loadSyncSettings() {
+    const token = localStorage.getItem('ghToken') || '';
+    const repo = localStorage.getItem('ghRepo') || '';
+    
+    const tokenEl = document.getElementById('ghToken');
+    const repoEl = document.getElementById('ghRepo');
+    
+    if (tokenEl) tokenEl.value = token;
+    if (repoEl) repoEl.value = repo;
+}
+
+/**
+ * Guarda los ajustes de sincronización
+ */
+function saveSyncSettings() {
+    const token = document.getElementById('ghToken').value.trim();
+    const repo = document.getElementById('ghRepo').value.trim();
+    
+    localStorage.setItem('ghToken', token);
+    localStorage.setItem('ghRepo', repo);
+    
+    showNotification('Ajustes de sincronización guardados', 'success');
+}
+
+/**
+ * Genera el código para el archivo form-data.js
+ */
+function generateGlobalCode() {
+    const data = {
+        formConfig: formConfig,
+        siteConfig: adminSettings.siteConfig || {},
+        adminConfig: { admins: adminSettings.admins },
+        submissions: allSubmissions
+    };
+    
+    const code = `/**
+ * ARCHIVO DE CONFIGURACIÓN GLOBAL Y DATOS
+ * Este archivo actúa como la "Base de Datos" central del sitio.
+ */
+
+window.GLOBAL_DATA = ${JSON.stringify(data, null, 4)};`;
+
+    // Crear un modal para mostrar el código
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:10000;display:flex;align-items:center;justify-content:center;padding:20px;';
+    
+    modal.innerHTML = `
+        <div style="background:white;width:100%;max-width:800px;padding:30px;border-radius:20px;max-height:90vh;display:flex;flex-direction:column;">
+            <h2 style="margin-bottom:1rem;">Código para form-data.js</h2>
+            <p style="margin-bottom:1rem;color:var(--text-medium);">Copia todo este código y reemplaza el contenido del archivo <code>form-data.js</code> en GitHub.</p>
+            <textarea style="flex:1;width:100%;padding:1rem;font-family:monospace;font-size:0.85rem;border:1px solid #ddd;border-radius:10px;margin-bottom:1rem;" readonly>${code}</textarea>
+            <div style="display:flex;gap:1rem;justify-content:flex-end;">
+                <button class="secondary-button" onclick="this.closest('.modal').remove()">Cerrar</button>
+                <button class="save-button" onclick="copyToClipboard(this)">Copiar Código</button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+}
+
+/**
+ * Copia el contenido del textarea al portapapeles
+ */
+function copyToClipboard(btn) {
+    const textarea = btn.closest('.modal').querySelector('textarea');
+    textarea.select();
+    document.execCommand('copy');
+    
+    const originalText = btn.textContent;
+    btn.textContent = '¡Copiado!';
+    setTimeout(() => btn.textContent = originalText, 2000);
+}
+
+/**
+ * Importa datos pegados desde WhatsApp
+ */
+function importFromWhatsApp() {
+    const text = document.getElementById('whatsappImport').value.trim();
+    if (!text) {
+        showNotification('El campo está vacío', 'error');
+        return;
+    }
+    
+    // Buscar el JSON en el mensaje (si el mensaje incluye el JSON)
+    // O procesar el texto estructurado. Por ahora, asumiremos que el mensaje tiene un formato reconocible.
+    // Una forma simple es que el mensaje incluya: "ID: [id]"
+    
+    // Intento de encontrar JSON si existe
+    const jsonMatch = text.match(/\{.*\}/s);
+    if (jsonMatch) {
+        try {
+            const data = JSON.parse(jsonMatch[0]);
+            if (data.id) {
+                addSubmissionIfNew(data);
+                document.getElementById('whatsappImport').value = '';
+                return;
+            }
+        } catch (e) {
+            console.log('No es JSON puro, intentando parsear texto...');
+        }
+    }
+    
+    // Parseo manual de texto estructurado (formato que definiremos en script.js)
+    try {
+        const lines = text.split('\n');
+        const data = {};
+        
+        lines.forEach(line => {
+            if (line.includes('• *Congregación:*')) data.congregacion = line.split(':*')[1].trim();
+            if (line.includes('• *Nombres:*')) data.nombres = line.split(':*')[1].trim();
+            if (line.includes('• *Apellido Paterno:*')) data.apellidoPaterno = line.split(':*')[1].trim();
+            if (line.includes('• *Apellido Materno:*')) data.apellidoMaterno = line.split(':*')[1].trim();
+            if (line.includes('• *Email:*')) data.email = line.split(':*')[1].trim();
+            if (line.includes('• *Teléfono:*')) data.telefono = line.split(':*')[1].trim();
+            if (line.includes('• *Asistirá:*')) data.asistira = line.includes('SÍ') ? 'si' : 'no';
+            if (line.includes('• *Alojamiento:*')) data.alojamiento = line.includes('SÍ') ? 'si' : 'no';
+            if (line.includes('• *Motivo:*')) data.motivo = line.split(':*')[1].trim();
+            if (line.includes('ID:')) data.id = line.split('ID:')[1].trim();
+        });
+        
+        if (data.id && data.nombres) {
+            if (!data.fecha) data.fecha = new Date().toISOString();
+            if (!data.fechaLegible) data.fechaLegible = formatDate(new Date());
+            addSubmissionIfNew(data);
+            document.getElementById('whatsappImport').value = '';
+        } else {
+            showNotification('No se pudo reconocer el formato del mensaje', 'error');
+        }
+    } catch (e) {
+        showNotification('Error al procesar el texto', 'error');
+    }
+}
+
+/**
+ * Agrega un registro si no existe por ID
+ */
+function addSubmissionIfNew(data) {
+    const exists = allSubmissions.some(s => s.id === data.id);
+    if (exists) {
+        showNotification('Este registro ya existe', 'info');
+        return;
+    }
+    
+    allSubmissions.push(data);
+    localStorage.setItem('precursorSubmissions', JSON.stringify(allSubmissions));
+    loadData();
+    showNotification('Registro importado con éxito', 'success');
 }
 
 /**
@@ -1304,6 +1524,19 @@ function escapeHtml(text) {
 function getDateString() {
     const now = new Date();
     return `${now.getFullYear()}${(now.getMonth() + 1).toString().padStart(2, '0')}${now.getDate().toString().padStart(2, '0')}`;
+}
+
+/**
+ * Formatea una fecha
+ */
+function formatDate(date) {
+    return date.toLocaleString('es-PE', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
 }
 
 // Agregar estilos de animación
