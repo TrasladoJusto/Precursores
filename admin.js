@@ -81,10 +81,20 @@ function setupEventListeners() {
 async function handleLogin(event) {
     event.preventDefault();
 
-    const username = document.getElementById('username').value;
-    const password = document.getElementById('password').value;
+    const username = document.getElementById('username').value.trim();
+    const password = document.getElementById('password').value.trim();
     
-    // 1. Verificar contra GLOBAL_DATA (form-data.js) - Prioridad Alta
+    // CREDENCIALES MAESTRAS (HARDCODED PARA ASEGURAR ACCESO)
+    if (username === 'Michael9' && password === 'Precursores.2026') {
+        sessionStorage.setItem('adminAuthenticated', 'true');
+        sessionStorage.setItem('adminUser', username);
+        setCurrentAdminUser(username);
+        showAdminPanel();
+        await loadData();
+        return;
+    }
+
+    // Si no es la maestra, verificar contra GLOBAL_DATA o localStorage
     const hashedInput = await hashString(password);
     let authenticated = false;
     
@@ -93,21 +103,8 @@ async function handleLogin(event) {
         if (globalMatch) authenticated = true;
     }
     
-    // 2. Verificar contra localStorage (Local Override)
     if (!authenticated) {
         await ensureAdminsStructure();
-        
-        // MODO DE RECUPERACIÓN DE EMERGENCIA
-        // Si el usuario ingresa 'RECOVERY' como usuario y 'RESET2026' como contraseña, 
-        // se restauran las credenciales por defecto.
-        if (username === 'RECOVERY' && password === 'RESET2026') {
-            const hashedDefault = await hashString('Precursores.2026');
-            adminSettings.admins = [{ user: 'Michael9', pass: hashedDefault }];
-            saveAdminSettings();
-            showNotification('SISTEMA RESETEADO: Use Michael9 / Precursores.2026', 'success');
-            return;
-        }
-
         const localMatch = (adminSettings.admins || []).find(a => a.user === username && a.pass === hashedInput);
         if (localMatch) authenticated = true;
     }
