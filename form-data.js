@@ -11,7 +11,8 @@ window.GLOBAL_DATA = {
             "Congregación Sur",
             "Congregación Este",
             "Congregación Oeste",
-            "Otra congregación"
+            "Otra congregación",
+            "Congregaciín Santa Marina"
         ],
         "submissionsEnabled": true
     },
