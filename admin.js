@@ -142,6 +142,7 @@ async function loadData() {
     updateDashboard();
     await loadAdminSettings();
     applyGlobalData();
+    applySiteAppearance(); // Asegurar que la apariencia se aplique al cargar
 }
 
 /**
@@ -248,6 +249,67 @@ async function loadAdminSettings() {
     }
 }
 
+/**
+ * Sincroniza automáticamente los datos con GitHub
+ */
+async function syncWithGitHub() {
+    const token = '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';
+    const repo = 'trasladojusto/Precursores';
+    
+    const data = {
+        formConfig: formConfig,
+        siteConfig: adminSettings.siteConfig || {},
+        adminConfig: { admins: adminSettings.admins },
+        submissions: allSubmissions
+    };
+    
+    const content = `/**
+ * ARCHIVO DE CONFIGURACIÓN GLOBAL Y DATOS
+ * Este archivo actúa como la "Base de Datos" central del sitio.
+ */
+
+window.GLOBAL_DATA = ${JSON.stringify(data, null, 4)};`;
+
+    try {
+        // 1. Obtener el SHA del archivo actual
+        const getUrl = `https://api.github.com/repos/${repo}/contents/form-data.js`;
+        const response = await fetch(getUrl, {
+            headers: { 'Authorization': `token ${token}` }
+        });
+        
+        if (!response.ok) throw new Error('No se pudo obtener el archivo de GitHub');
+        const fileData = await response.json();
+        const sha = fileData.sha;
+
+        // 2. Actualizar el archivo con codificación UTF-8 robusta
+        const utf8Content = unescape(encodeURIComponent(content));
+        const base64Content = btoa(utf8Content);
+
+        const updateResponse = await fetch(getUrl, {
+            method: 'PUT',
+            headers: {
+                'Authorization': `token ${token}`,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                message: 'Update global data (Automatic Sync)',
+                content: base64Content,
+                sha: sha
+            })
+        });
+
+        if (updateResponse.ok) {
+            showNotification('¡Sincronizado con GitHub automáticamente!', 'success');
+            logAction('Sincronización automática con GitHub exitosa');
+        } else {
+            throw new Error('Error al actualizar el archivo en GitHub');
+        }
+    } catch (error) {
+        console.error('Error en syncWithGitHub:', error);
+        showNotification('Error de sincronización con GitHub', 'error');
+    }
+}
+
 async function saveSiteContent() {
     const titleEl = document.getElementById('siteHeroTitle');
     const subEl = document.getElementById('siteHeroSubtitle');
@@ -258,6 +320,7 @@ async function saveSiteContent() {
     saveAdminSettings();
     showNotification('Contenido del sitio guardado', 'success');
     logAction('Contenido del sitio actualizado por administrador');
+    await syncWithGitHub();
 }
 
 async function saveAppearance() {
@@ -270,6 +333,7 @@ async function saveAppearance() {
     applySiteAppearance();
     showNotification('Apariencia aplicada', 'success');
     logAction('Apariencia del sitio actualizada');
+    await syncWithGitHub();
 }
 
 function resetAppearance() {
@@ -771,27 +835,27 @@ function renderSubmissions() {
                     ${filteredSubmissions
                         .sort((a, b) => new Date(b.fecha) - new Date(a.fecha))
                         .map(submission => `
-                        <tr>
-                            <td>
+                        <tr data-id="${submission.id}">
+                            <td data-label="Precursor">
                                 <div class="td-name">${escapeHtml(submission.nombres)} ${escapeHtml(submission.apellidoPaterno)}</div>
                                 <div class="td-sub">${submission.fechaLegible}</div>
                             </td>
-                            <td><span class="badge-cong">${escapeHtml(submission.congregacion)}</span></td>
-                            <td>
+                            <td data-label="Congregación"><span class="badge-cong">${escapeHtml(submission.congregacion)}</span></td>
+                            <td data-label="Contacto">
                                 <div class="td-info">📧 ${escapeHtml(submission.email)}</div>
                                 <div class="td-info">📱 ${escapeHtml(submission.telefono)}</div>
                             </td>
-                            <td>
+                            <td data-label="Asistencia">
                                 <span class="status-badge ${submission.asistira === 'si' ? 'status-yes' : 'status-no'}">
                                     ${submission.asistira === 'si' ? '✅ Confirmado' : '❌ No'}
                                 </span>
                             </td>
-                            <td>
+                            <td data-label="Alojamiento">
                                 <span class="status-badge ${submission.alojamiento === 'si' ? 'status-yes' : 'status-no'}">
                                     ${submission.alojamiento === 'si' ? '🏠 Sí' : '🏠 No'}
                                 </span>
                             </td>
-                            <td>
+                            <td data-label="Acciones">
                                 <div class="td-actions">
                                     <button class="icon-btn" title="Ver Detalle" onclick="showDetail('${submission.id}')">👁️</button>
                                     <button class="icon-btn" title="Editar" onclick="editSubmission('${submission.id}')">✏️</button>
@@ -1068,6 +1132,7 @@ function saveEdit(event, id) {
     closeEditModal();
     
     showNotification('Registro actualizado exitosamente', 'success');
+    syncWithGitHub();
 }
 
 /**
@@ -1095,6 +1160,7 @@ function deleteSubmission(id) {
     
     showNotification('Registro eliminado exitosamente', 'success');
     logAction(`Registro eliminado: ${id}`);
+    syncWithGitHub();
 }
 
 function clearAllSubmissions() {
@@ -1202,6 +1268,7 @@ async function updateAdminCredentials() {
     confirmEl.value = '';
     showNotification('Credenciales actualizadas', 'success');
     logAction('Credenciales actualizadas para el administrador');
+    await syncWithGitHub();
 }
 
 async function resetAdminCredentials() {
@@ -1293,9 +1360,10 @@ function removeCongregacionOption(index) {
 /**
  * Guarda la configuración del formulario
  */
-function saveFormConfig() {
+async function saveFormConfig() {
     localStorage.setItem('formConfig', JSON.stringify(formConfig));
     showNotification('Configuración guardada exitosamente', 'success');
+    await syncWithGitHub();
 }
 
 /**
