@@ -678,57 +678,6 @@ function loadManualSyncSettings() {
 }
 
 /**
- * Genera el código para el archivo form-data.js
- */
-function generateGlobalCode() {
-    const data = {
-        formConfig: formConfig,
-        siteConfig: adminSettings.siteConfig || {},
-        adminConfig: { admins: adminSettings.admins },
-        submissions: allSubmissions
-    };
-    
-    const code = `/**
- * ARCHIVO DE CONFIGURACIÓN GLOBAL Y DATOS
- * Este archivo actúa como la "Base de Datos" central del sitio.
- */
-
-window.GLOBAL_DATA = ${JSON.stringify(data, null, 4)};`;
-
-    // Crear un modal para mostrar el código
-    const modal = document.createElement('div');
-    modal.className = 'modal';
-    modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:10000;display:flex;align-items:center;justify-content:center;padding:20px;';
-    
-    modal.innerHTML = `
-        <div style="background:white;width:100%;max-width:800px;padding:30px;border-radius:20px;max-height:90vh;display:flex;flex-direction:column;">
-            <h2 style="margin-bottom:1rem;">Código para form-data.js</h2>
-            <p style="margin-bottom:1rem;color:var(--text-medium);">Copia todo este código y reemplaza el contenido del archivo <code>form-data.js</code> en GitHub.</p>
-            <textarea style="flex:1;width:100%;padding:1rem;font-family:monospace;font-size:0.85rem;border:1px solid #ddd;border-radius:10px;margin-bottom:1rem;" readonly>${code}</textarea>
-            <div style="display:flex;gap:1rem;justify-content:flex-end;">
-                <button class="secondary-button" onclick="this.closest('.modal').remove()">Cerrar</button>
-                <button class="save-button" onclick="copyToClipboard(this)">Copiar Código</button>
-            </div>
-        </div>
-    `;
-    
-    document.body.appendChild(modal);
-}
-
-/**
- * Copia el contenido del textarea al portapapeles
- */
-function copyToClipboard(btn) {
-    const textarea = btn.closest('.modal').querySelector('textarea');
-    textarea.select();
-    document.execCommand('copy');
-    
-    const originalText = btn.textContent;
-    btn.textContent = '¡Copiado!';
-    setTimeout(() => btn.textContent = originalText, 2000);
-}
-
-/**
  * Importa datos pegados desde WhatsApp
  */
 function importFromWhatsApp() {
