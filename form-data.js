@@ -7,7 +7,7 @@ window.GLOBAL_DATA = {
     "formConfig": {
         "congregaciones": [
             "Congregación Seanz Peña",
-            "Congregación Norte",
+            "Congregación Colina",
             "Congregación Sur",
             "Congregación Este",
             "Congregación Oeste",
