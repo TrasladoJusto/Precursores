@@ -8,11 +8,18 @@ window.GLOBAL_DATA = {
         "congregaciones": [
             "Congregación Seanz Peña",
             "Congregación Colina",
-            "Congregación Sur",
-            "Congregación Este",
-            "Congregación Oeste",
-            "Otra congregación",
-            "Congregaciín Santa Marina"
+            "Congregación Acapulco",
+            "Congregación California",
+            "Congregación Castilla",
+            "Congregación Chacarita",
+            "Congregación Santa Marina",
+            "Congregación Costanera",
+            "Congregación El Emisor",
+            "Congregación Gálvez",
+            "Congregación Santa Fe",
+            "Congregación Stella Maris",
+            "Congregación Ciudad del Pescador",
+            "Congregación La Marina"
         ],
         "submissionsEnabled": true
     },
